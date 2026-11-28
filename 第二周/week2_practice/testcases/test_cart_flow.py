@@ -1,6 +1,7 @@
 import pytest
 import allure
 from api.cart_api import CartApi
+from utils import attach_api_log
 
 cart_api = CartApi()
 
@@ -13,6 +14,9 @@ def test_add_and_query_cart_flow():
     with allure.step("步骤1:登录并提取 Token"):
         # 第一步：登录，拿到 token 和 userId
         login_res = cart_api.login()
+        # 把登录的请求和响应塞进报告
+        attach_api_log(login_res, request_name="登录请求")
+
         assert login_res.status_code == 200
         token = login_res.json()["accessToken"]
         user_id = login_res.json()["id"]
@@ -23,6 +27,7 @@ def test_add_and_query_cart_flow():
         with allure.step(f"步骤2: 将商品 {product_id} 加入购物车"):
             add_res = cart_api.add_to_cart(token=token, user_id=user_id, product_id=product_id, quantity=quantity)
 
+        attach_api_log(add_res, request_name="加购请求")
         assert add_res.status_code in (200, 201)
         add_json = add_res.json()
         # 加购成功后，提取新生成的购物车 ID，并断言总价/数量
@@ -45,6 +50,8 @@ def test_add_and_query_cart_flow():
         # 注意：因为 DummyJSON 是假接口，GET /carts/{cart_id}查不到刚才 POST 的数据。
         # 第三步：拿着刚才拿到的 cart id 去查购物车详情
         get_res = cart_api.get_cart(token=token, cart_id=cart_id)
+
+        attach_api_log(get_res, request_name="查询购物车")
 
         if get_res.status_code == 200:
             get_json = get_res.json()
