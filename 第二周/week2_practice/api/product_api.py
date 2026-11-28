@@ -15,6 +15,8 @@ class ProductApi:
             "skip": skip
         }
         # 注意这里用的是 params 参数，requests 会自动把字典拼接到 URL 后面变成 ?limit=10&skip=0
+        # get_products 里用的是 params=params，而不是 json=payload。因为这是一个 GET 请求，参数是拼接在 URL 上的（Query String），
+        # 而不是放在请求体里的 JSON。面试中经常会问“GET 和 POST 传参的区别”，这就是最直观的体现。
         response = requests.get(self.products_url, params=params)
         return response
 
